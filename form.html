@@ -2,8 +2,8 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>บันทึกรายการ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บันทึกรายการรายรับรายจ่าย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: "Sarabun", sans-serif; padding: 20px; background: #f0fff0; margin: 0; }
     h1 { text-align: center; margin-bottom: 20px; }
@@ -16,10 +16,12 @@
   </style>
 </head>
 <body>
+
   <h1>บันทึกรายการรายรับรายจ่าย</h1>
+
   <form onsubmit="submitData(event)">
     <label for="date">วันที่</label>
-    <input type="date" id="date" required />
+    <input type="date" id="date" />
 
     <label for="type">ประเภท</label>
     <select id="type">
@@ -28,7 +30,7 @@
     </select>
 
     <label for="amount">จำนวนเงิน (บาท)</label>
-    <input type="number" id="amount" required />
+    <input type="number" id="amount" />
 
     <label for="description">คำอธิบาย</label>
     <textarea id="description" rows="2"></textarea>
@@ -38,31 +40,39 @@
   </form>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbyvvihOdnUK2dNXgrCCqfT-2Oh-7lvRzj0VE2L84CNOGXLHybMhKh6tFqNomPOaDoZI/exec"; // <-- แก้ตรงนี้
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx6q4SNrCEo1vcV58xAQ6ju9gLhZzIgUH4XedbUPSfQ6Cp1AomRlhPt5CDh0hilHXMF/exec"; // เปลี่ยนตรงนี้
 
-    function submitData(e) {
-      e.preventDefault();
-      const date = document.getElementById("date").value;
-      const type = document.getElementById("type").value;
-      const amount = document.getElementById("amount").value;
-      const description = document.getElementById("description").value;
+    function submitData(event) {
+      event.preventDefault();
       const status = document.getElementById("status");
+
+      const data = {
+        date: document.getElementById("date").value || "",
+        type: document.getElementById("type").value || "",
+        amount: document.getElementById("amount").value || "",
+        description: document.getElementById("description").value || ""
+      };
 
       fetch(scriptURL, {
         method: 'POST',
-        body: JSON.stringify({ date, type, amount, description }),
+        body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
       })
       .then(response => response.text())
       .then(result => {
-        status.textContent = "บันทึกสำเร็จ ✅";
-        document.querySelector("form").reset();
+        if (result.includes("Success")) {
+          status.textContent = "บันทึกสำเร็จ ✅";
+          document.querySelector("form").reset();
+        } else {
+          status.textContent = "บันทึกผิดพลาด ❌";
+        }
       })
       .catch(error => {
-        status.textContent = "เกิดข้อผิดพลาด ❌";
+        status.textContent = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ ❌";
         console.error('Error!', error.message);
       });
     }
   </script>
+
 </body>
 </html>
