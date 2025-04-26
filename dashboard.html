@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายงานรายรับรายจ่าย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: "Sarabun", sans-serif; padding: 20px; background: #fefefe; }
+    h1, h2 { text-align: center; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #e0ffe0; }
+    .summary { text-align: center; font-size: 1.2em; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>รายงานรายรับรายจ่าย</h1>
+
+  <div class="summary" id="summary">กำลังโหลดสรุปยอด...</div>
+
+  <table>
+    <thead>
+      <tr><th>วันที่</th><th>ประเภท</th><th>จำนวน</th><th>คำอธิบาย</th></tr>
+    </thead>
+    <tbody id="dataBody">
+      <tr><td colspan="4">กำลังโหลดข้อมูล...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const apiURL = "https://sheet2api.com/v1/UVLBhmMpSKkZ/farmer-ledger";
+    
+    fetch(apiURL)
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById("dataBody");
+        const summary = document.getElementById("summary");
+        tbody.innerHTML = "";
+
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        data.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.Date || "-"}</td>
+            <td>${row.Type || "-"}</td>
+            <td>${row.Amount || "0"}</td>
+            <td>${row.Description || "-"}</td>
+          `;
+          tbody.appendChild(tr);
+
+          const amount = parseFloat(row.Amount) || 0;
+          if (row.Type === "รายรับ") {
+            totalIncome += amount;
+          } else if (row.Type === "รายจ่าย") {
+            totalExpense += amount;
+          }
+        });
+
+        const balance = totalIncome - totalExpense;
+
+        summary.innerHTML = `
+          💰 รายรับรวม: <b>${totalIncome.toLocaleString()} บาท</b> |
+          💸 รายจ่ายรวม: <b>${totalExpense.toLocaleString()} บาท</b> |
+          🧾 คงเหลือ: <b>${balance.toLocaleString()} บาท</b>
+        `;
+      })
+      .catch(error => {
+        document.getElementById("dataBody").innerHTML = "<tr><td colspan='4'>โหลดข้อมูลไม่สำเร็จ ❌</td></tr>";
+        document.getElementById("summary").textContent = "โหลดสรุปไม่สำเร็จ ❌";
+        console.error("Error loading data:", error);
+      });
+  </script>
+</body>
+</html>
